@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الصيدلية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .table th, .table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .medicine-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .expired {
+            border-color: #dc3545;
+            background: #ffe6e6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- الهيدر -->
+        <div class="header">
+            <h1>🏥 نظام إدارة الصيدلية</h1>
+        </div>
+
+        <!-- التنقل -->
+        <div class="nav">
+            <button class="nav-btn active" onclick="showSection('dashboard')">لوحة التحكم</button>
+            <button class="nav-btn" onclick="showSection('inventory')">إدارة المخزون</button>
+            <button class="nav-btn" onclick="showSection('sales')">المبيعات</button>
+            <button class="nav-btn" onclick="showSection('customers')">العملاء</button>
+            <button class="nav-btn" onclick="showSection('reports')">التقارير</button>
+        </div>
+
+        <!-- لوحة التحكم -->
+        <div id="dashboard" class="content-section active">
+            <h2 class="section-title">لوحة التحكم</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalMedicines">0</span>
+                    <span>إجمالي الأدوية</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalSales">0</span>
+                    <span>عمليات البيع اليوم</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalCustomers">0</span>
+                    <span>إجمالي العملاء</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="expiredMedicines">0</span>
+                    <span>أدوية منتهية</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="showSection('inventory')">إدارة المخزون</button>
+                <button class="btn btn-success" onclick="showSection('sales')">عمليات البيع</button>
+                <button class="btn btn-danger" onclick="showExpiredModal()">عرض الأدوية المنتهية</button>
+            </div>
+        </div>
+
+        <!-- إدارة المخزون -->
+        <div id="inventory" class="content-section">
+            <h2 class="section-title">إدارة المخزون</h2>
+            
+            <button class="btn btn-primary" onclick="showAddMedicineModal()">➕ إضافة دواء جديد</button>
+            
+            <div id="inventoryList" class="medicine-list" style="margin-top: 20px;">
+                <!-- سيتم ملؤها بالبيانات -->
+            </div>
+        </div>
+
+        <!-- المبيعات -->
+        <div id="sales" class="content-section">
+            <h2 class="section-title">إدارة المبيعات</h2>
+            
+            <div class="form-group">
+                <label>اختر الدواء:</label>
+                <select id="medicineSelect">
+                    <option value="">-- اختر دواء --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الكمية:</label>
+                <input type="number" id="saleQuantity" min="1" value="1">
+            </div>
+            
+            <button class="btn btn-success" onclick="processSale()">✅ تأكيد عملية البيع</button>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>الدواء</th>
+                        <th>الكمية</th>
+                        <th>السعر</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTable">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- العملاء -->
+        <div id="customers" class="content-section">
+            <h2 class="section-title">إدارة العملاء</h2>
+            
+            <button class="btn btn-primary" onclick="showAddCustomerModal()">➕ إضافة عميل جديد</button>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الهاتف</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>تاريخ التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTable">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- التقارير -->
+        <div id="reports" class="content-section">
+            <h2 class="section-title">التقارير والإحصائيات</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="reportTotalSales">0</span>
+                    <span>إجمالي المبيعات</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="reportTotalRevenue">0</span>
+                    <span>إجمالي الإيرادات (ريال)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="reportTopMedicine">-</span>
+                    <span>الدواء الأكثر مبيعاً</span>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateReport()">🔄 تحديث التقارير</button>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة دواء -->
+    <div id="addMedicineModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addMedicineModal')">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">إضافة دواء جديد</h2>
+            
+            <div class="form-group">
+                <label>اسم الدواء:</label>
+                <input type="text" id="medicineName" placeholder="أدخل اسم الدواء">
+            </div>
+            
+            <div class="form-group">
+                <label>الكمية:</label>
+                <input type="number" id="medicineQuantity" min="1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label>السعر (ريال):</label>
+                <input type="number" id="medicinePrice" min="0" step="0.01" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label>تاريخ الانتهاء:</label>
+                <input type="date" id="medicineExpiry">
+            </div>
+            
+            <button class="btn btn-success" style="width: 100%;" onclick="addMedicine()">إضافة الدواء</button>
+        </div>
+    </div>
+
+    <!-- نافذة الأدوية المنتهية -->
+    <div id="expiredModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('expiredModal')">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">الأدوية المنتهية الصلاحية</h2>
+            <div id="expiredMedicinesList">
+                <!-- سيتم ملؤها بالبيانات -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة عميل -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addCustomerModal')">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">إضافة عميل جديد</h2>
+            
+            <div class="form-group">
+                <label>اسم العميل:</label>
+                <input type="text" id="customerName" placeholder="أدخل اسم العميل">
+            </div>
+            
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="tel" id="customerPhone" placeholder="أدخل رقم الهاتف">
+            </div>
+            
+            <div class="form-group">
+                <label>البريد الإلكتروني:</label>
+                <input type="email" id="customerEmail" placeholder="أدخل البريد الإلكتروني">
+            </div>
+            
+            <button class="btn btn-success" style="width: 100%;" onclick="addCustomer()">إضافة العميل</button>
+        </div>
+    </div>
+
+    <script>
+        // بيانات التخزين
+        let medicines = JSON.parse(localStorage.getItem('medicines')) || [];
+        let sales = JSON.parse(localStorage.getItem('sales')) || [];
+        let customers = JSON.parse(localStorage.getItem('customers')) || [];
+
+        // دالة عرض القسم
+        function showSection(sectionId) {
+            // إخفاء جميع الأقسام
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // إزالة النشط من جميع الأزرار
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // عرض القسم المطلوب
+            document.getElementById(sectionId).classList.add('active');
+            
+            // تحديث البيانات عند عرض القسم
+            if(sectionId === 'dashboard') updateDashboard();
+            if(sectionId === 'inventory') displayInventory();
+            if(sectionId === 'sales') displaySales();
+            if(sectionId === 'customers') displayCustomers();
+            if(sectionId === 'reports') generateReport();
+        }
+
+        // تحديث لوحة التحكم
+        function updateDashboard() {
+            document.getElementById('totalMedicines').textContent = medicines.length;
+            document.getElementById('totalSales').textContent = sales.length;
+            document.getElementById('totalCustomers').textContent = customers.length;
+            
+            const expiredCount = medicines.filter(med => new Date(med.expiryDate) < new Date()).length;
+            document.getElementById('expiredMedicines').textContent = expiredCount;
+        }
+
+        // عرض المخزون
+        function displayInventory() {
+            const inventoryList = document.getElementById('inventoryList');
+            inventoryList.innerHTML = '';
+            
+            medicines.forEach((medicine, index) => {
+                const isExpired = new Date(medicine.expiryDate) < new Date();
+                const card = document.createElement('div');
+                card.className = `medicine-card ${isExpired ? 'expired' : ''}`;
+                card.innerHTML = `
+                    <strong>${medicine.name}</strong><br>
+                    الكمية: ${medicine.quantity} | السعر: ${medicine.price} ريال<br>
+                    الانتهاء: ${medicine.expiryDate} ${isExpired ? '⛔ منتهي' : ''}
+                    <button class="btn btn-danger" onclick="deleteMedicine(${index})" style="float: left; padding: 5px 10px; font-size: 0.8em;">حذف</button>
+                `;
+                inventoryList.appendChild(card);
+            });
+        }
+
+        // عرض المبيعات
+        function displaySales() {
+            const medicineSelect = document.getElementById('medicineSelect');
+            medicineSelect.innerHTML = '<option value="">-- اختر دواء --</option>';
+            
+            medicines.forEach(medicine => {
+                if(medicine.quantity > 0) {
+                    const option = document.createElement('option');
+                    option.value = medicine.name;
+                    option.textContent = `${medicine.name} - ${medicine.price} ريال (${medicine.quantity} متوفر)`;
+                    medicineSelect.appendChild(option);
+                }
+            });
+            
+            const salesTable = document.getElementById('salesTable');
+            salesTable.innerHTML = '';
+            
+            sales.forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sale.medicineName}</td>
+                    <td>${sale.quantity}</td>
+                    <td>${sale.totalPrice} ريال</td>
+                    <td>${sale.date}</td>
+                `;
+                salesTable.appendChild(row);
+            });
+        }
+
+        // معالجة عملية البيع
+        function processSale() {
+            const medicineName = document.getElementById('medicineSelect').value;
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            
+            if(!medicineName || !quantity) {
+                alert('يرجى اختيار الدواء وإدخال الكمية');
+                return;
+            }
+            
+            const medicine = medicines.find(med => med.name === medicineName);
+            
+            if(!medicine) {
+                alert('الدواء غير موجود');
+                return;
+            }
+            
+            if(medicine.quantity < quantity) {
+                alert('الكمية غير متوفرة في المخزون');
+                return;
+            }
+            
+            // تحديث المخزون
+            medicine.quantity -= quantity;
+            
+            // تسجيل عملية البيع
+            const sale = {
+                medicineName: medicine.name,
+                quantity: quantity,
+                totalPrice: quantity * medicine.price,
+                date: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            sales.push(sale);
+            
+            // حفظ البيانات
+            saveData();
+            
+            // تحديث العرض
+            displaySales();
+            displayInventory();
+            updateDashboard();
+            
+            alert(`تمت عملية البيع بنجاح! الإجمالي: ${sale.totalPrice} ريال`);
+            
+            // إعادة تعيين الحقول
+            document.getElementById('medicineSelect').value = '';
+            document.getElementById('saleQuantity').value = 1;
+        }
+
+        // عرض العملاء
+        function displayCustomers() {
+            const customersTable = document.getElementById('customersTable');
+            customersTable.innerHTML = '';
+            
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${customer.name}</td>
+                    <td>${customer.phone}</td>
+                    <td>${customer.email}</td>
+                    <td>${customer.registrationDate}</td>
+                `;
+                customersTable.appendChild(row);
+            });
+        }
+
+        // إضافة دواء جديد
+        function showAddMedicineModal() {
+            document.getElementById('addMedicineModal').style.display = 'block';
+        }
+
+        function addMedicine() {
+            const name = document.getElementById('medicineName').value;
+            const quantity = parseInt(document.getElementById('medicineQuantity').value);
+            const price = parseFloat(document.getElementById('medicinePrice').value);
+            const expiryDate = document.getElementById('medicineExpiry').value;
+            
+            if(!name || !quantity || !price || !expiryDate) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+            
+            const medicine = {
+                name: name,
+                quantity: quantity,
+                price: price,
+                expiryDate: expiryDate
+            };
+            
+            medicines.push(medicine);
+            saveData();
+            displayInventory();
+            updateDashboard();
+            closeModal('addMedicineModal');
+            
+            // إعادة تعيين الحقول
+            document.getElementById('medicineName').value = '';
+            document.getElementById('medicineQuantity').value = 1;
+            document.getElementById('medicinePrice').value = 0;
+            document.getElementById('medicineExpiry').value = '';
+        }
+
+        // حذف دواء
+        function deleteMedicine(index) {
+            if(confirm('هل أنت متأكد من حذف هذا الدواء؟')) {
+                medicines.splice(index, 1);
+                saveData();
+                displayInventory();
+                updateDashboard();
+            }
+        }
+
+        // عرض الأدوية المنتهية
+        function showExpiredModal() {
+            const expiredList = document.getElementById('expiredMedicinesList');
+            expiredList.innerHTML = '';
+            
+            const expiredMedicines = medicines.filter(med => new Date(med.expiryDate) < new Date());
+            
+            if(expiredMedicines.length === 0) {
+                expiredList.innerHTML = '<p style="text-align: center; color: green;">لا توجد أدوية منتهية الصلاحية</p>';
+            } else {
+                expiredMedicines.forEach(med => {
+                    const card = document.createElement('div');
+                    card.className = 'medicine-card expired';
+                    card.innerHTML = `
+                        <strong>${med.name}</strong><br>
+                        الكمية: ${med.quantity} | السعر: ${med.price} ريال<br>
+                        تاريخ الانتهاء: ${med.expiryDate}
+                    `;
+                    expiredList.appendChild(card);
+                });
+            }
+            
+            document.getElementById('expiredModal').style.display = 'block';
+        }
+
+        // إضافة عميل جديد
+        function showAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'block';
+        }
+
+        function addCustomer() {
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const email = document.getElementById('customerEmail').value;
+            
+            if(!name) {
+                alert('يرجى إدخال اسم العميل');
+                return;
+            }
+            
+            const customer = {
+                name: name,
+                phone: phone,
+                email: email,
+                registrationDate: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            customers.push(customer);
+            saveData();
+            displayCustomers();
+            updateDashboard();
+            closeModal('addCustomerModal');
+            
+            // إعادة تعيين الحقول
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerEmail').value = '';
+        }
+
+        // توليد التقارير
+        function generateReport() {
+            const totalSales = sales.reduce((sum, sale) => sum + sale.quantity, 0);
+            const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalPrice, 0);
+            
+            // إيجاد الدواء الأكثر مبيعاً
+            const medicineSales = {};
+            sales.forEach(sale => {
+                medicineSales[sale.medicineName] = (medicineSales[sale.medicineName] || 0) + sale.quantity;
+            });
+            
+            let topMedicine = '-';
+            let maxSales = 0;
+            for(const medicine in medicineSales) {
+                if(medicineSales[medicine] > maxSales) {
+                    maxSales = medicineSales[medicine];
+                    topMedicine = medicine;
+                }
+            }
+            
+            document.getElementById('reportTotalSales').textContent = totalSales;
+            document.getElementById('reportTotalRevenue').textContent = totalRevenue.toFixed(2);
+            document.getElementById('reportTopMedicine').textContent = topMedicine;
+        }
+
+        // دالة حفظ البيانات
+        function saveData() {
+            localStorage.setItem('medicines', JSON.stringify(medicines));
+            localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('customers', JSON.stringify(customers));
+        }
+
+        // دالة إغلاق النوافذ
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // تهيئة البيانات عند التحميل
+        window.onload = function() {
+            updateDashboard();
+            displayInventory();
+            
+            // إضافة بيانات مثال إذا لم توجد
+            if(medicines.length === 0) {
+                medicines = [
+                    { name: "باراسيتامول", quantity: 100, price: 15.5, expiryDate: "2025-12-31" },
+                    { name: "فيتامين C", quantity: 50, price: 25.0, expiryDate: "2025-10-15" },
+                    { name: "أموكسيسيلين", quantity: 30, price: 32.75, expiryDate: "2024-01-15" }
+                ];
+                saveData();
+                displayInventory();
+            }
+        }
+
+        // إغلاق النافذة عند النقر خارجها
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
